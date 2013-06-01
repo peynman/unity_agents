@@ -164,6 +164,9 @@ GameObject:
   - 114: {fileID: 1856899439}
   - 114: {fileID: 1856899440}
   - 114: {fileID: 1856899441}
+  - 114: {fileID: 1856899442}
+  - 114: {fileID: 1856899443}
+  - 114: {fileID: 1856899444}
   m_Layer: 0
   m_Name: Agents
   m_TagString: Untagged
@@ -190,7 +193,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1856899437}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 334ad5688894a475c9ab94eb80e6360e, type: 1}
+  m_Script: {fileID: 11500000, guid: a735a61fd1cee410788d8d2be00ec215, type: 1}
   m_Name: 
 --- !u!114 &1856899440
 MonoBehaviour:
@@ -210,7 +213,43 @@ MonoBehaviour:
   m_GameObject: {fileID: 1856899437}
   m_Enabled: 1
   m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a589fa0cb0cd847e38945193368208f4, type: 1}
+  m_Name: 
+  StartSessionOnAwake: 1
+  EndSessionOnSuspend: 1
+  ReportLocation: 1
+  CaptureUncouthException: 1
+  LogEnabled: 1
+  UseHttps: 0
+--- !u!114 &1856899442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1856899437}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a46db03ea11f14e0aae60c1004b62342, type: 1}
+  m_Name: 
+--- !u!114 &1856899443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1856899437}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 334ad5688894a475c9ab94eb80e6360e, type: 1}
+  m_Name: 
+--- !u!114 &1856899444
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1856899437}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 277070736ed6243f9b324019ddec8f02, type: 1}
   m_Name: 
 --- !u!1 &1901493546
 GameObject:
@@ -224,6 +263,8 @@ GameObject:
   - 114: {fileID: 1901493549}
   - 114: {fileID: 1901493550}
   - 114: {fileID: 1901493551}
+  - 114: {fileID: 1901493552}
+  - 114: {fileID: 1901493553}
   m_Layer: 0
   m_Name: Samples UI
   m_TagString: Untagged
@@ -344,3 +385,26 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ce077024e047445a5b379b8e8a8b60b4, type: 1}
   m_Name: 
+--- !u!114 &1901493552
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1901493546}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e477901b51d5461cbb0ad2c47728b8c, type: 1}
+  m_Name: 
+  BannerUID: a1518fa9a0719f3
+--- !u!114 &1901493553
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1901493546}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eae769397320498cb7aca55762ae9c8, type: 1}
+  m_Name: 
+  SampleProducts: []
+  SamplePurchasID: 

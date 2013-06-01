@@ -10,6 +10,7 @@ public class AndroidPluginManager : EditorWindow
 	Manifest			manifest;
 	AgentDependency		plugins;
 	ManifestResource	strings;
+	ManifestResource	exist_strings;
 	
 	GUIStyle	PositiveButton = new GUIStyle("Button");
 	GUIStyle	NegetiveButton = new GUIStyle("Button");
@@ -39,11 +40,12 @@ public class AndroidPluginManager : EditorWindow
 				manifest = AndroidManifestEditor.LoadManifestFromFile(Manifest.ManifestFile);
 			else
 				manifest = new Manifest();
-			/*
+			
 			if (System.IO.File.Exists(ManifestResource.StringsFilename))
-				strings = StringEditor.LoadResourcesFromFile(ManifestResource.StringsFilename);
-			else */
-				strings = new ManifestResource();
+				exist_strings = StringEditor.LoadResourcesFromFile(ManifestResource.StringsFilename);
+			else
+				exist_strings = new ManifestResource();
+			strings = new ManifestResource();
 		} else
 			Debug.LogError("AgentDependencies.xml not found.");
 
@@ -89,12 +91,13 @@ public class AndroidPluginManager : EditorWindow
 			if (guiVersions.EditingVersion != null)
 				SaveVersionToFile(GetVersionFilename(guiVersions.EditingVersion), guiVersions.EditingVersion);
 		}
-		if (GUILayout.Button("Apply Current Version"))
+		if (GUILayout.Button("Export & Apply"))
 		{
 			if (guiVersions.EditingVersion != null)
 			{
 				SaveVersionToFile(GetVersionFilename(guiVersions.EditingVersion), guiVersions.EditingVersion);
 				ApplyVersion(guiVersions.EditingVersion);
+				this.Close();
 			}
 		}
 		if (GUILayout.Button("Close"))
@@ -123,11 +126,22 @@ public class AndroidPluginManager : EditorWindow
 					version_style = NormalLabel;
 				else
 				{
-					if (v.isVersionReady())
+					/*
+					Object agent = GameObject.FindObjectOfType(System.Type.GetType("UnityEngine."+plugins.Agents[i].filename.Substring(0, 
+						plugins.Agents[i].filename.Length-3), false, false));
+					if (agent == null)
 					{
-						if (v.isManifestReady(manifest) && v.isStringsReady(strings)) version_style = GreenLabel;
-						else version_style = YellowLabel;
-					} else version_style = RedLabel;
+						version_style = NormalLabel;
+						v.status = false;
+						Debug.LogWarning("No GameObject with " + plugins.Agents[i].filename + " component has found!");
+					} else */
+					{
+						if (v.isVersionReady())
+						{
+							if (v.isManifestReady(manifest) && v.isStringsReady(exist_strings)) version_style = GreenLabel;
+							else version_style = YellowLabel;
+						} else version_style = RedLabel;
+					}
 				}
 			} else
 			{
@@ -150,6 +164,7 @@ public class AndroidPluginManager : EditorWindow
 	}
 	
 #region Apply
+	string[]		PreDefinitions;
 	private void		ApplyVersion(AgentSetVersion v)
 	{
 		PlayerSettings.bundleVersion = v.versionName;
@@ -159,23 +174,51 @@ public class AndroidPluginManager : EditorWindow
 		manifest.versionCode = v.versionCode;
 		manifest.versionName = v.versionName;
 		
+		PreDefinitions = v.PreDefine.ToArray();
+		SetPreDefinitions();
+		
 		foreach (AgentManifest mans in plugins.Agents)
 		{
-			if (!v.hasPlugin(mans.filename) || v.getVersionOfPlugin(mans.filename).status==false)
+			if (!v.hasPlugin(mans.filename))
 			{
+				SetPluginDefinition(SearchPathForFilename(Application.dataPath, mans.filename), false);
 				RemoveDependencies(mans);
-			} else
+			} else if (v.getVersionOfPlugin(mans.filename).status == false)
 			{
-				AddPluginDependencies(v.getVersionOfPlugin(mans.filename));
+				SetPluginDefinition(SearchPathForFilename(Application.dataPath, mans.filename), false);
+				RemoveDependencies(v.getVersionOfPlugin(mans.filename));
+			}
+		}
+		foreach (AgentManifest mans in plugins.Agents)
+		{
+			if (v.hasPlugin(mans.filename))
+			{
+				AgentVersion plug = v.getVersionOfPlugin(mans.filename);
+				if (plug.status)
+				{
+					SetPluginDefinition(SearchPathForFilename(Application.dataPath, mans.filename), true);
+					AddPluginDependencies(plug);
+				}
 			}
 		}
 		AndroidManifestEditor.SaveManifestToFile(Manifest.ManifestFile, manifest);
-		//StringEditor.SaveResourcesToFile(ManifestResource.StringsFilename, strings);
+		ManifestResource current_strings;
+		if (System.IO.File.Exists(ManifestResource.StringsFilename))
+			current_strings = StringEditor.LoadResourcesFromFile(ManifestResource.StringsFilename);
+		else
+			current_strings = new ManifestResource();
+		for (int i = 0; i < strings.Count; i++)
+		{
+			if (current_strings.hasName(strings.names[i]))
+				current_strings.setValue(strings.names[i], strings.values[i]);
+			else
+				current_strings.addValue(strings.names[i], strings.values[i]);
+		}
+		StringEditor.SaveResourcesToFile(ManifestResource.StringsFilename, current_strings);
 		Debug.Log("Done :)");
 	}
 	private void		AddPluginDependencies(AgentVersion plug)
 	{
-		SetPreDefinitionForFilename(plug.filename);
 		foreach (ManifestMetaData source in plug.MetaData)
 		{
 			if (!manifest.application.hasMetaData(source.name))
@@ -190,16 +233,27 @@ public class AndroidPluginManager : EditorWindow
 				manifest.application.addActivity().name = act.name;
 			CopyActivityData(act, manifest.application.getActivity(act.name));
 		}
+		foreach (ManifestMetaData hardmmd in plug.ManifestSource.MetaData)
+		{
+			if (ManifestResource.isResourceString(hardmmd.value))
+			{
+				if (!manifest.application.hasMetaData(hardmmd.name))
+					manifest.application.addMetaData().name = hardmmd.name;
+				manifest.application.getMetaData(hardmmd.name).value = hardmmd.value;
+				if (hardmmd.resource != "NOT SET")
+					manifest.application.getMetaData(hardmmd.name).resource = hardmmd.resource;
+			}
+		}
 		foreach (ManifestPermission perm in plug.ManifestSource.Permission)
 		{
 			if (!manifest.hasPermission(perm.name)) manifest.addPermission().name = perm.name;
 		}
 		for (int i = 0; i < plug.ManifestSource.Strings.Count; i++)
 		{
-			if (strings.hasName(plug.ManifestSource.Strings.names[i]))
-				strings.setValue(plug.ManifestSource.Strings.names[i], plug.ManifestSource.Strings.values[i]);
+			if (strings.hasName(plug.Strings.names[i]))
+				strings.setValue(plug.Strings.names[i], plug.Strings.values[i]);
 			else
-				strings.addValue(plug.ManifestSource.Strings.names[i], plug.ManifestSource.Strings.values[i]);
+				strings.addValue(plug.Strings.names[i], plug.Strings.values[i]);
 		}
 		if (!System.IO.Directory.Exists(Manifest.LibsFolder)) System.IO.Directory.CreateDirectory(Manifest.LibsFolder);
 		CopyLibraryFiles(System.IO.Directory.GetFiles(plug.ManifestSource.LibraryFolder));
@@ -211,8 +265,6 @@ public class AndroidPluginManager : EditorWindow
 	}
 	private void		RemoveDependencies(AgentManifest mans)
 	{
-		// todo: clear manifest
-		
 		if (mans.hasResources())
 		{
 			ResFolder resfolder = new ResFolder(mans.ResFolder);
@@ -220,6 +272,27 @@ public class AndroidPluginManager : EditorWindow
 		}
 		ResFolder libfolder = new ResFolder(mans.LibraryFolder);
 		libfolder.ClearHierarchyFrom(Manifest.LibsFolder);
+	}
+	private void		RemoveDependencies(AgentVersion plug)
+	{
+		RemoveDependencies(plug.ManifestSource);
+		foreach (ManifestActivity act in plug.ManifestSource.Activity)
+		{
+			if (manifest.application.hasActivity(act.name))
+				manifest.application.activity.Remove(manifest.application.getActivity(act.name));
+		}
+		foreach (ManifestMetaData mmd in plug.MetaData)
+		{
+			if (manifest.application.hasMetaData(mmd.name))
+				manifest.application.meta_data.Remove(manifest.application.getMetaData(mmd.name));
+		}
+		for (int i = 0; i < plug.Strings.Count; i++)
+		{
+			if (strings.hasName(plug.Strings.names[i]))
+			{
+				strings.removeEntry(plug.Strings.names[i]);
+			}
+		}
 	}
 	private void		CopyLibraryFiles(string[] libs)
 	{
@@ -233,6 +306,7 @@ public class AndroidPluginManager : EditorWindow
 			}
 		}
 	}
+	/*
 	private void		CopyResFiles(string folder)
 	{
 		string[] files = System.IO.Directory.GetFiles(folder);
@@ -248,10 +322,7 @@ public class AndroidPluginManager : EditorWindow
 		}
 		foreach (string resfolder in folders)
 			CopyResFiles(resfolder);
-	}
-	private void		ReadResourcesFileAndAddToStrings(string filename)
-	{
-	}
+	}*/
 	private void		CopyActivityData(ManifestActivity source, ManifestActivity dest)
 	{
 		if (source.name != dest.name) { Debug.LogError("Could not copy data!"); return; }
@@ -266,18 +337,39 @@ public class AndroidPluginManager : EditorWindow
 			dest.meta_data.Add(nmd);
 		}
 	}
+	private void		SetPreDefinitions()
+	{
+		string[] csharp_files = System.IO.Directory.GetFiles(Application.dataPath, "*.cs", System.IO.SearchOption.AllDirectories);
+		foreach (string path in csharp_files) SetPreDefinitionForFilename(path);
+	}
 	private void		SetPreDefinitionForFilename(string filename)
 	{
-		string path = SearchPathForFilename(Application.dataPath, filename);
-		if (System.IO.File.Exists(path))
+		List<string> lines = new List<string>(System.IO.File.ReadAllLines(filename));
+		if (lines[0].StartsWith("#define BEGIN_VERSIONS"))
 		{
-			System.IO.StreamReader reader = new System.IO.StreamReader(path);
-			string line_1 = reader.ReadLine();
-			if (line_1.StartsWith("#define") || line_1.StartsWith("#undef"))
+			int end_prev_definitions = -1;
+			for (int i = 0; i < lines.Count; i++)
 			{
-				
+				if (lines[i].StartsWith("#undef BEGIN_VERSIONS")) { end_prev_definitions = i; break; }
 			}
+			if (end_prev_definitions > 1)
+				for (int i = 0; i < end_prev_definitions; i++) lines[i].Remove(1);
+			for (int i = 0; i < PreDefinitions.Length; i++) lines[i].Insert(1, "#defien " + PreDefinitions);
+			System.IO.File.WriteAllLines(filename, lines.ToArray());
 		}
+	}
+	private void		SetPluginDefinition(string filename, bool status)
+	{
+		string[] lines = System.IO.File.ReadAllLines(filename);
+		if (lines[0].StartsWith("#define") || lines[0].StartsWith("#undef"))
+		{
+			if (status)
+				lines[0] = "#define	ENABLE_PLUGIN";
+			else
+				lines[0] = "#undef ENABLE_PLUGIN";
+		}
+		System.IO.File.SetAttributes(filename, System.IO.FileAttributes.Normal);
+		System.IO.File.WriteAllLines(filename, lines);
 	}
 	private string		SearchPathForFilename(string path, string filename)
 	{

@@ -37,7 +37,7 @@ public class AdmobAgent : NemoAgent
 	}
 	private void		_RefreshBanner(int banner)
 	{
-		android.Call("RefreshAdLoad", banner);
+		android.Call("RequestFreshAd", banner);
 	}
 	private void		_SetGender(string gender)
 	{
@@ -67,6 +67,10 @@ public class AdmobAgent : NemoAgent
 	{
 		return android.Call<bool>("isFullscreenAdReady");
 	}
+	private void		_DestroyBanner(int banner_id)
+	{
+		android.Call("DestroyBanner", banner_id);
+	}
 #else
 	private void		_CreateBanner(int iid, int size, string uid) {}
 	private void		_SetBannerPosition(int banner, int left, int top) {}
@@ -76,6 +80,10 @@ public class AdmobAgent : NemoAgent
 	private void		_SetBirthdate(string year, string month, string day) {}
 	private void		_SetLocation(string location) {}
 	private void		_SetCustomRequestStatus(bool status) {}
+	private void		_RequestFullscreenAd(string uid) {}
+	private void		_ShowFullscreenAd() {}
+	private bool		_isFullscreenAdReady() { return false; }
+	private void		_DestroyBanner(int banner_id) {}
 #endif
 	
 	public enum AdmobEvent
@@ -84,8 +92,7 @@ public class AdmobAgent : NemoAgent
 		OnFailedToReceiveAd = 2,
 		OnLeaveApplication = 3,
 		OnPresentScreen = 4,
-		OnReceiveAd = 5,
-		OnFullscreenAdReady = 6
+		OnReceiveAd = 5
 	}
 	public enum AdmobBannerSize
 	{
@@ -120,11 +127,11 @@ public class AdmobAgent : NemoAgent
 	
 	Dictionary<int, HandleAdmobEvent>	handles;
 	Dictionary<int, AdmobBanner>		banners;
-	HandleFullscreenAdReady				fullscreenbanner_handle;
 	private int		internal_id = 1;						
 	
 	public delegate void			HandleAdmobEvent(AdmobEvent e, int width, int height, string error);
-	public delegate void			HandleFullscreenAdReady();
+	public delegate void			HandleFullscreenAdEvent(AdmobEvent e, string error);
+	public event HandleFullscreenAdEvent		OnFullscreenAdEvent;
 	
 	public int		CreateBanner(AdmobBannerSize size, string uid, HandleAdmobEvent handle)
 	{
@@ -135,7 +142,10 @@ public class AdmobAgent : NemoAgent
 		return iid;
 	}
 	
-	public void		SetBannerPosition(int banner, int left, int top) { _SetBannerPosition(banner, left, top); }
+	public void		SetBannerPosition(int banner, int left, int top) 
+	{
+		_SetBannerPosition(banner, left, top); 
+	}
 	public void		SetBannerVisibility(int banner, bool state)
 	{ _SetBannerVisibility(banner, state); banners[banner].Visible = state; }
 	public void		RefreshBanner(int banner)
@@ -143,17 +153,24 @@ public class AdmobAgent : NemoAgent
 	public void		SetGender(AdmobGender gender) { _SetGender(gender.ToString()); }	
 	public void		SetBirthdate(string year, string month, string day) { _SetBirthdate(year, month, day); }
 	public void		SetLocation(string location) { _SetLocation(location); }
-	public void		RequestFullscreenAd(string uid, HandleFullscreenAdReady handle)
-	{
-		fullscreenbanner_handle = handle;
-		_RequestFullscreenAd(uid); 
-	}
+	public void		RequestFullscreenAd(string uid) { _RequestFullscreenAd(uid);  }
 	public void		ShowFullscreenAd() { _ShowFullscreenAd(); }
 	public bool		isFullscreenAdReady() { return _isFullscreenAdReady(); }
 	public void		SetCustomRequestStatus(bool status) { _SetCustomRequestStatus(status); }
 	public AdmobBanner		GetBanner(int banner_id) { return banners[banner_id]; }
 	public bool				isBannerVisible(int banner_id) { return banners[banner_id].Visible; }
 	public bool				isBannerLoadedWithAd(int banner_id) { return banners[banner_id].AdLoaded; }
+	public void				DestroyBanner(ref int banner_id)
+	{
+		_DestroyBanner(banner_id);
+		handles.Remove(banner_id);
+		banners.Remove(banner_id);
+		banner_id = 0;
+	}
+	public void				SetBannerEventListener(int banner_id, HandleAdmobEvent handle)
+	{
+		handles[banner_id] = handle;
+	}
 	
 	private int		generateNextID() { return ++internal_id; }
 	
@@ -162,17 +179,18 @@ public class AdmobAgent : NemoAgent
 	{
 		Hashtable data = MiniJSON.JsonDecode(json) as Hashtable;
 		AdmobEvent eid = (AdmobEvent)int.Parse(data["eid"].ToString());
-		if (eid == AdmobEvent.OnFullscreenAdReady)
+		int iid = int.Parse(data["iid"].ToString());
+		string error = "";
+		if (iid == -1000)
 		{
-			if (fullscreenbanner_handle != null) fullscreenbanner_handle();
+			if (eid == AdmobEvent.OnFailedToReceiveAd) error = data["error"].ToString();
+			if (OnFullscreenAdEvent != null) OnFullscreenAdEvent(eid, error);
 		} else
 		{
-			int iid = int.Parse(data["iid"].ToString());
 			if (handles.ContainsKey(iid))
 			{
 				HandleAdmobEvent ehandle = handles[iid];
 				int width = 0, height = 0;
-				string error = "";
 				if (eid == AdmobEvent.OnReceiveAd)
 				{
 					width = int.Parse(data["width"].ToString());
@@ -197,15 +215,9 @@ public class AdmobAgent : NemoAgent
 
 	#region NemoAgent implementation
 #if ENABLE_PLUGIN
-	public override bool			isEnable { get { return true; } }
+	public override bool		isEnable { get { return true; } }
 #else
 	public override bool		isEnable { get { return false; } }	
-#endif
-	public override string		Title { get { return "Admob"; } }
-	public override string		Description { get { return "Admob Advertising"; } }
-	public override string 		VersionName { get { return "1.0"; } }
-#if UNITY_ANDROID
-	public override string		ElementName { get { return "admob-agent"; } }
 #endif
 	#endregion
 }

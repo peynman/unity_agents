@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-public class NemoActivity : MonoBehaviour
+public class NemoActivity : NemoAgent
 {
 	static NemoActivity			_instance;
 	public static NemoActivity	instance { get { return _instance; } }
@@ -44,4 +44,12 @@ public class NemoActivity : MonoBehaviour
 	}
 #endregion
 	
+	
+	#region NemoAgent implementation
+#if ENABLE_PLUGIN
+	public override bool		isEnable { get { return true; } }
+#else
+	public override bool		isEnable { get { return false; } }	
+#endif
+	#endregion
 }

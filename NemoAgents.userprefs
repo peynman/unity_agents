@@ -2,10 +2,7 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Nemo/Editor/Android/AndroidPluginManager.cs">
     <Files>
-      <File FileName="Assets/Nemo/Editor/Android/ManifestEditor.cs" Line="6" Column="17" />
-      <File FileName="Assets/Nemo/Editor/Android/AndroidPluginManager.cs" Line="75" Column="3" />
-      <File FileName="Assets/Nemo/Editor/Android/StringEditor.cs" Line="28" Column="2" />
-      <File FileName="Assets/Plugins/Android/AndroidManifest.xml" Line="17" Column="29" />
+      <File FileName="Assets/Nemo/Editor/Android/AndroidPluginManager.cs" Line="325" Column="5" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -16,6 +13,9 @@
                 <Node name="Plugins" expanded="True">
                   <Node name="Agents" expanded="True" />
                 </Node>
+              </Node>
+              <Node name="Plugins" expanded="True">
+                <Node name="Android" expanded="True" />
               </Node>
               <Node name="Sample" expanded="True" />
             </Node>

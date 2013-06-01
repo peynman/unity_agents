@@ -88,6 +88,7 @@ public class StringEditor : EditorWindow
 	}
 #endregion
 	
+	/*
 #if UNITY_ANDROID
 	[MenuItem("Nemo/Android/String Editor")]
 	public static StringEditor		ShowManifestEditorWindow()
@@ -98,5 +99,5 @@ public class StringEditor : EditorWindow
 		editor.Show();
 		return editor;
 	}
-#endif
+#endif */
 }

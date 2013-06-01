@@ -27,6 +27,7 @@ public class Manifest : iXMLSerializable
 		"android.permission.ACCESS_NETWORK_STATE",
 		"android.permission.READ_PHONE_STATE",
 		"android.permission.ACCESS_FINE_LOCATION",
+		"com.android.vending.BILLING",
 		"android.permission.WRITE_EXTERNAL_STORAGE",
 		"android.permission.BLUETOOTH",
 		"android.permission.RECEIVE_SMS",
@@ -437,7 +438,7 @@ public class ManifestResource : iXMLSerializable
 	{
 		return names.Contains(name);
 	}
-	public bool		isResourceString(string value)
+	public static bool		isResourceString(string value)
 	{
 		return value.StartsWith("@string/");
 	}
@@ -466,6 +467,12 @@ public class ManifestResource : iXMLSerializable
 	{
 		int index = names.IndexOf(name);
 		values[index] = value;
+	}
+	public void		removeEntry(string name)
+	{
+		int index = names.IndexOf(name);
+		values.RemoveAt(index);
+		names.RemoveAt(index);
 	}
 }
 
@@ -691,14 +698,17 @@ public class AgentSetVersion : iXMLSerializable
 	}
 	public bool		isManifestReady(Manifest manifest)
 	{
-		if (manifest.package != name || manifest.versionCode != versionCode || manifest.versionName != versionName)
+		if (manifest.package != bundleid || manifest.versionCode != versionCode || manifest.versionName != versionName)
 			return false;
-		for (int i = 0; i < Plugins.Count; i++) if (!Plugins[i].isManifestReady(manifest)) return false;
+		for (int i = 0; i < Plugins.Count; i++)
+		{
+			if (!Plugins[i].isManifestReady(manifest)) return false;
+		}
 		return true;
 	}
 	public bool		isStringsReady(ManifestResource strings)
 	{
-		for (int i = 0; i < Plugins.Count; i++) if (!Plugins[i].isStringsReady(strings)) return false;
+		for (int i = 0; i < Plugins.Count; i++) if (Plugins[i].status && !Plugins[i].isStringsReady(strings)) return false;
 		return true;
 	}
 	public bool		isLibraryReady()
@@ -754,28 +764,45 @@ public class AgentVersion : iXMLSerializable
 		filename = am.filename;
 		this.status = status;
 		MetaData.Clear();
-		for (int i = 0; i < am.MetaData.Count; i++)
+		Strings.names.Clear();
+		Strings.values.Clear();
+		importMetaDataFrom(am.MetaData, false);
+		foreach (ManifestActivity act in am.Activity)
+			importMetaDataFrom(act.meta_data, true);
+		ManifestSource = am;
+	}
+	
+	private void	importMetaDataFrom(List<ManifestMetaData> list, bool onlyStrings)
+	{
+		for (int i = 0; i < list.Count; i++)
 		{
 			ManifestMetaData version_data = new ManifestMetaData();
-			version_data.name = am.MetaData[i].name;
-			if (Strings.isResourceString(am.MetaData[i].value))
-				Strings.addFromMetaData(am.MetaData[i], "NOT SET");
-			if (am.MetaData[i].value == SoftValueString)
+			version_data.name = list[i].name;
+			if (ManifestResource.isResourceString(list[i].value))
 			{
-				version_data.value = "NOT SET";
-				version_data.resource = "NOT SET";
+				Strings.addFromMetaData(list[i], "NOT SET");
 			} else
 			{
-				version_data.value = am.MetaData[i].value;
-				version_data.resource = am.MetaData[i].resource;
+				if (!onlyStrings)
+				{
+					if (list[i].value == SoftValueString)
+					{
+						version_data.value = "NOT SET";
+						version_data.resource = "NOT SET";
+					} else
+					{
+						version_data.value = list[i].value;
+						version_data.resource = list[i].resource;
+					}
+					MetaData.Add(version_data);
+				}
 			}
-			MetaData.Add(version_data);
 		}
-		ManifestSource = am;
 	}
 	
 	public bool		isManifestReady(Manifest manifest)
 	{
+		if (!status) return true;
 		for (int i = 0; i < ManifestSource.Activity.Count; i++)
 		{
 			if (!manifest.hasActivity(ManifestSource.Activity[i].name)) return false;
@@ -816,19 +843,15 @@ public class AgentVersion : iXMLSerializable
 	
 	public bool		isLibraryReady()
 	{
-		
 		return true;
 	}
 	public bool		isVersionReady()
 	{
-		for (int i = 0; i < ManifestSource.Activity.Count; i++)
-		{	
-			List<ManifestMetaData> metas = ManifestSource.Activity[i].meta_data;
-			for (int j = 0; j < metas.Count; j++)
-				if (metas[j].value == "NOT SET") return false;
+		if (status)
+		{
+			for (int i = 0; i < MetaData.Count; i++) if (MetaData[i].value == "NOT SET") return false;
+			for (int i = 0; i < Strings.Count; i++) if (Strings.values[i] == "NOT SET") return false;
 		}
-		for (int i = 0; i < MetaData.Count; i++) if (MetaData[i].value == "NOT SET") return false;
-		for (int i = 0; i < Strings.Count; i++) if (Strings.values[i] == "NOT SET") return false;
 		return true;
 	}
 }
@@ -908,12 +931,16 @@ public class ResFolder
 		{
 			if (isFileInHierarchy(file.Substring(path.Length)))
 			{
+				string source_file = getFileInHierarchy(file.Substring(path.Length));
 				System.IO.File.SetAttributes(file, System.IO.FileAttributes.Normal);
 				if (isMergable(file))
 				{
-					ClearXMLs("",file);
+					ClearXMLs(source_file ,file);
 				} else
+				{
 					File.Delete(file);
+					if (File.Exists(file + ".meta")) File.Delete(file + ".meta");
+				}
 			}
 		}
 	}
@@ -934,6 +961,25 @@ public class ResFolder
 				if (ff == filename)
 					return true;
 			return false;
+		}
+	}
+	
+	public string	getFileInHierarchy(string filename)
+	{
+		if (filename.IndexOf('/') > 0)
+		{
+			string root = filename.Substring(0, filename.IndexOf('/'));
+			ResFolder foldername = null;
+			foreach (ResFolder rf in folders)
+				if (rf.name == root) { foldername = rf; break; }
+			if (foldername != null) return foldername.getFileInHierarchy(filename.Substring(root.Length+1));
+			return "|";
+		} else
+		{
+			foreach (string ff in files)
+				if (ff == filename)
+					return FilePath + ff;
+			return ".";
 		}
 	}
 	
@@ -958,9 +1004,9 @@ public class ResFolder
 		
 		foreach (XmlNode childs in doc_source.DocumentElement.ChildNodes)
 		{
-			bool exist = false;
 			XmlNode imported = doc_dest.ImportNode(childs, true);
-			if (!exist) doc_dest.DocumentElement.AppendChild(imported);
+			if (getNodeAsChild(imported, doc_dest.DocumentElement) == null)
+				doc_dest.DocumentElement.AppendChild(imported);
 		}
 		
 		XmlTextWriter	writer = new XmlTextWriter(dest, System.Text.Encoding.UTF8);
@@ -972,13 +1018,64 @@ public class ResFolder
 		writer.Close();
 	}
 	
-	public static void 	DeepEqual(XmlNode n1, XmlNode n2)
+	public static XmlNode	getNodeAsChild(XmlNode node, XmlNode search)
 	{
-		
+		foreach (XmlNode child in search)
+		{
+			if (isDeepEqual(child, node)) return child;
+		}
+		return null;
 	}
 	
-	public void		ClearXMLs(string clear, string source)
+	public static bool 	isDeepEqual(XmlNode n1, XmlNode n2)
 	{
+		if (n1.Name != n2.Name) return false;
+		if (n1.Attributes != null && n2.Attributes != null)
+		{
+			if (n1.Attributes.Count != n2.Attributes.Count) return false;
+			foreach (XmlAttribute att in n1.Attributes)
+			{
+				if (n2.Attributes[att.Name] == null || n2.Attributes[att.Name].Value != att.Value) return false;
+			}
+		} else if (n1.Attributes != n2.Attributes) return false;
+		if (n1.HasChildNodes && n2.HasChildNodes)
+		{
+			foreach (XmlNode child in n1.ChildNodes)
+			{
+				if (getNodeAsChild(child, n2) == null) return false;
+			}
+		} else if (n1.HasChildNodes != n2.HasChildNodes) return false;
+		return true;
+	}
+	
+	public void		ClearXMLs(string source, string dest)
+	{
+		System.IO.StreamReader reader = new System.IO.StreamReader(source);
+		string xmldata = reader.ReadToEnd();
+		reader.Close();
+		XmlDocument doc_source = new XmlDocument();
+		doc_source.LoadXml(xmldata);
+		
+		reader = new System.IO.StreamReader(dest);
+		xmldata = reader.ReadToEnd();
+		reader.Close();
+		XmlDocument doc_dest = new XmlDocument();
+		doc_dest.LoadXml(xmldata);
+		
+		foreach (XmlNode child in doc_source.DocumentElement.ChildNodes)
+		{
+			XmlNode to_clear = getNodeAsChild(child, doc_dest.DocumentElement);
+			if (to_clear != null)
+				doc_dest.DocumentElement.RemoveChild(to_clear);
+		}
+		
+		XmlTextWriter	writer = new XmlTextWriter(dest, System.Text.Encoding.UTF8);
+		writer.Indentation = 4;
+		writer.Formatting = Formatting.Indented;
+		writer.Settings.NewLineHandling = NewLineHandling.Entitize;
+		writer.Settings.NewLineOnAttributes = true;
+		doc_dest.WriteTo(writer);
+		writer.Close();
 	}
 }
 
@@ -1290,8 +1387,10 @@ public class UnityGUI_Versions
 	{
 		if (ver.isVersionReady())
 		{
-			if (ver.isManifestReady(manifest)) return GreenLabel;
-			else return YellowLabel;
+			if (ver.isManifestReady(manifest))
+				return GreenLabel;
+			else 
+				return YellowLabel;
 		} else return RedLabel;
 	}
 	

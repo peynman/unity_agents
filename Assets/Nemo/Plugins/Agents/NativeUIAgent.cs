@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-public class NativeUIAgent : MonoBehaviour
+public class NativeUIAgent : NemoAgent
 {
 	public enum NativeUIEvent 
 	{
@@ -122,5 +122,13 @@ public class NativeUIAgent : MonoBehaviour
 			break;
 		}
 	}
+	#endregion
+	
+	#region NemoAgent implementation
+#if ENABLE_PLUGIN
+	public override bool		isEnable { get { return true; } }
+#else
+	public override bool		isEnable { get { return false; } }	
+#endif
 	#endregion
 }

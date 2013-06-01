@@ -1,4 +1,4 @@
-#define	ENABLE_PLUGIN
+#undef ENABLE_PLUGIN
 
 using UnityEngine;
 using System.Collections;
@@ -95,6 +95,22 @@ public class FlurryAgent : NemoAgent
             }
         }
 	}
+#else
+	private void	_StartSession() {}
+	private void	_EndSession() {}
+	private void	_SetReportLocation(bool status) {}
+	private void	_SetCaptureUncouthExceptions(bool status) {}
+	private void	_SetContinueSessionMilis(long milis) {}
+	private void	_LogEvent(string id) {}
+	private void	_LogEvent(string id, Dictionary<string, string> data) {}
+	private void	_LogEvent(string id, Dictionary<string, string> data, bool timed) {}
+	private void	_LogEvent(string id, bool timed) {}
+	private void	_LogPageView() {}
+	private void	_SetLogEnabled(bool status) {}
+	private void	_SetUseHttps(bool status) {}
+	private void	_SetAge(int age) {}
+	private void	_SetGender(int gender) {}
+	private void	_SetUserID(string id) {}
 #endif
 	
 	void Awake()
@@ -139,12 +155,12 @@ public class FlurryAgent : NemoAgent
 	public void		SetGender(int gender) { _SetGender(gender); }
 	public void		SetUserID(string id) { _SetUserID(id); }
 	
-	#region implemented abstract members of NemoAgent
-	public override string Title { get { return "FlurryAgent"; } }
-	public override bool isEnable { get { return true; } }
-	public override string Description { get { return "Flurry Agent"; } }
-	public override string VersionName { get { return "1.0"; } }
-	public override string ElementName { get { return ""; } }
+	#region NemoAgent implementation
+#if ENABLE_PLUGIN
+	public override bool		isEnable { get { return true; } }
+#else
+	public override bool		isEnable { get { return false; } }	
+#endif
 	#endregion
 	
 }
