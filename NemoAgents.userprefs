@@ -1,8 +1,10 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Nemo/Editor/Android/AndroidPluginManager.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Nemo/Agents/NativeUIAgent.cs">
     <Files>
-      <File FileName="Assets/Nemo/Editor/Android/AndroidPluginManager.cs" Line="325" Column="5" />
+      <File FileName="Assets/Nemo/Agents/FlurryAgent.cs" Line="31" Column="3" />
+      <File FileName="Assets/Nemo/Agents/NativeUIAgent.cs" Line="62" Column="6" />
+      <File FileName="Assets/Sample/NativeUISample.cs" Line="50" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -10,9 +12,10 @@
           <Node name="Assembly-CSharp" expanded="True">
             <Node name="Assets" expanded="True">
               <Node name="Nemo" expanded="True">
-                <Node name="Plugins" expanded="True">
-                  <Node name="Agents" expanded="True" />
+                <Node name="Agents" expanded="True">
+                  <Node name="FlurryAgent.cs" selected="True" />
                 </Node>
+                <Node name="Plugins" expanded="True" />
               </Node>
               <Node name="Plugins" expanded="True">
                 <Node name="Android" expanded="True" />
@@ -24,9 +27,7 @@
             <Node name="Assets" expanded="True">
               <Node name="Nemo" expanded="True">
                 <Node name="Editor" expanded="True">
-                  <Node name="Android" expanded="True">
-                    <Node name="AndroidPluginManager.cs" selected="True" />
-                  </Node>
+                  <Node name="Android" expanded="True" />
                 </Node>
               </Node>
               <Node name="Plugins" expanded="True">

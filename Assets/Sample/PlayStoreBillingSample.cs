@@ -1,3 +1,6 @@
+/* begin pre definitions */
+/* end pre definitions */
+
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -55,11 +58,15 @@ public class PlayStoreBillingSample : AgentUISample
 		}
 		if (GUILayout.Button("Static Purchase Success", s.ButtonStyle1))
 		{
+#if USE_BILLING_ON_ANDROID
 			PlayStoreBillingAgent.instacne.PurchaseProduct(PlayStoreBillingAgent.ReservedID_Purchased);
+#endif
 		}
 		if (GUILayout.Button("Static Purchase Failed", s.ButtonStyle1))
 		{
+#if USE_BILLING_ON_ANDROID
 			PlayStoreBillingAgent.instacne.PurchaseProduct(PlayStoreBillingAgent.ReservedID_ItemUnavailable);
+#endif
 		}
 		if (GUILayout.Button("Make Real Purchase", s.ButtonStyle1))
 		{

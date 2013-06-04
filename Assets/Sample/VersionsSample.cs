@@ -1,5 +1,6 @@
-#define BEGIN_VERSIONS
-#undef BEGIN_VERSIONS
+/* begin pre definitions */
+/* end pre definitions */
+
 
 using UnityEngine;
 using System.Collections;

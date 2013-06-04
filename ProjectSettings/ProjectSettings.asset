@@ -62,8 +62,8 @@ PlayerSettings:
   iPhoneBundleIdentifier: com.nemogames.dressup
   iPhoneBundleVersion: 1.0
   AndroidBundleVersionCode: 1
-  AndroidMinSdkVersion: 8
-  AndroidPreferredInstallLocation: 1
+  AndroidMinSdkVersion: 9
+  AndroidPreferredInstallLocation: 0
   aotOptions: 
   apiCompatibilityLevel: 2
   iPhoneStrippingLevel: 0

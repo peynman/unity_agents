@@ -177,6 +177,10 @@ public class AndroidPluginManager : EditorWindow
 		PreDefinitions = v.PreDefine.ToArray();
 		SetPreDefinitions();
 		
+		System.IO.Directory.CreateDirectory(Application.dataPath + "/Plugins/Android/");
+		System.IO.Directory.CreateDirectory(Application.dataPath + "/Plugins/Android/res");
+		System.IO.Directory.CreateDirectory(Application.dataPath + "/Plugins/Android/libs");
+		
 		foreach (AgentManifest mans in plugins.Agents)
 		{
 			if (!v.hasPlugin(mans.filename))
@@ -272,6 +276,11 @@ public class AndroidPluginManager : EditorWindow
 		}
 		ResFolder libfolder = new ResFolder(mans.LibraryFolder);
 		libfolder.ClearHierarchyFrom(Manifest.LibsFolder);
+		foreach (ManifestMetaData mmd in mans.MetaData)
+		{
+			if (manifest.application.hasMetaData(mmd.name))
+				manifest.application.meta_data.Remove(manifest.application.getMetaData(mmd.name));
+		}
 	}
 	private void		RemoveDependencies(AgentVersion plug)
 	{
@@ -306,23 +315,6 @@ public class AndroidPluginManager : EditorWindow
 			}
 		}
 	}
-	/*
-	private void		CopyResFiles(string folder)
-	{
-		string[] files = System.IO.Directory.GetFiles(folder);
-		string[] folders = System.IO.Directory.GetDirectories(folder);
-		if (!System.IO.Directory.Exists(folder)) System.IO.Directory.CreateDirectory(folder);
-		foreach (string resfile in files)
-		{
-			string filename = resfile.Substring(resfile.LastIndexOf("/"));
-			if (filename != "strings.xml")
-				System.IO.File.Copy(resfile, Manifest.ResFolder, true);
-			else
-				ReadResourcesFileAndAddToStrings(resfile);
-		}
-		foreach (string resfolder in folders)
-			CopyResFiles(resfolder);
-	}*/
 	private void		CopyActivityData(ManifestActivity source, ManifestActivity dest)
 	{
 		if (source.name != dest.name) { Debug.LogError("Could not copy data!"); return; }
@@ -345,17 +337,20 @@ public class AndroidPluginManager : EditorWindow
 	private void		SetPreDefinitionForFilename(string filename)
 	{
 		List<string> lines = new List<string>(System.IO.File.ReadAllLines(filename));
-		if (lines[0].StartsWith("#define BEGIN_VERSIONS"))
+		if (lines[0].Contains("begin pre definitions"))
 		{
 			int end_prev_definitions = -1;
-			for (int i = 0; i < lines.Count; i++)
+			for (int i = 1; i < lines.Count; i++)
 			{
-				if (lines[i].StartsWith("#undef BEGIN_VERSIONS")) { end_prev_definitions = i; break; }
+				if (lines[i].Contains("end pre definitions")) { end_prev_definitions = i; break; }
 			}
 			if (end_prev_definitions > 1)
-				for (int i = 0; i < end_prev_definitions; i++) lines[i].Remove(1);
-			for (int i = 0; i < PreDefinitions.Length; i++) lines[i].Insert(1, "#defien " + PreDefinitions);
-			System.IO.File.WriteAllLines(filename, lines.ToArray());
+				for (int i = 0; i < end_prev_definitions-1; i++) lines.RemoveAt(1);
+			if (end_prev_definitions != -1)
+			{
+				for (int i = 0; i < PreDefinitions.Length; i++) lines.Insert(1, "#define " + PreDefinitions[i]);
+				System.IO.File.WriteAllLines(filename, lines.ToArray());
+			}
 		}
 	}
 	private void		SetPluginDefinition(string filename, bool status)
