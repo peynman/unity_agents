@@ -38,7 +38,7 @@ public class AndroidAgentEditor : EditorWindow
 	void OnGUI()
 	{
 		window_scroll = EditorGUILayout.BeginScrollView(window_scroll);
-		EditorGUILayout.LabelField("Plugins", BoldLabel);
+		EditorGUILayout.LabelField("Plugins ( version = " + agents.VersionName + " )", BoldLabel);
 		EditorGUILayout.BeginHorizontal();
 		new_agent = EditorGUILayout.TextField("Plugin Filename" , new_agent);
 		if (GUILayout.Button("+", PositiveButton))
@@ -134,7 +134,7 @@ public class AndroidAgentEditor : EditorWindow
 	public static AndroidAgentEditor		ShowAgentDependencyEditorWindow()
 	{
 		AndroidAgentEditor editor = EditorWindow.GetWindow(typeof(AndroidAgentEditor),
-			true, "Android Manifest Editor") as AndroidAgentEditor;
+			true, "Android Plugins Editor") as AndroidAgentEditor;
 		editor.initialize();
 		editor.Show();
 		return editor;

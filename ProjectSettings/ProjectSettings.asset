@@ -12,7 +12,7 @@ PlayerSettings:
   accelerometerFrequency: 60
   companyName: Nemo Games
   productName: Agents
-  AndroidLicensePublicKey: 
+  AndroidLicensePublicKey: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgpYfAMF38OpO/YBzILOV6xTrph3QHqqy9rEfeeXuP6T7qwufQxyiGCXPjSSbJbcB3zpZSa53g0Ef96n0YuaWNaTHMIFPv1Guwxo8zEzdztbAMFyqnYYNco/K17RQ/TRDPlciGw0/YxAxgF6fHSOU4ONTCFi7gQVAoS6HACMixu+hbF6Wf/8J9T62x1GfXLhpI++cS7K4FclJNHRWP6GJbfPI/4OPLyJKIqW2O+stGjSLQY8DyxCXqHTKd8gx2i1krE+biLxd/wDSNa74tmlkEJHhGz+l/kFoOoMurHDp/v/0C6DN1md669C3HkU39Zi0y2MInyQWiJzN+gFEpfBKTQIDAQAB
   defaultScreenWidth: 1024
   defaultScreenHeight: 768
   defaultScreenWidthWeb: 960
@@ -59,10 +59,10 @@ PlayerSettings:
     16:9: 1
     Others: 1
   debugUnloadMode: 0
-  iPhoneBundleIdentifier: com.nemogames.dressup
+  iPhoneBundleIdentifier: com.nemogames.sample
   iPhoneBundleVersion: 1.0
   AndroidBundleVersionCode: 1
-  AndroidMinSdkVersion: 9
+  AndroidMinSdkVersion: 8
   AndroidPreferredInstallLocation: 0
   aotOptions: 
   apiCompatibilityLevel: 2

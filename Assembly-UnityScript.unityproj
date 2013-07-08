@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+	<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+	<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+	<ProductVersion>10.0.20506</ProductVersion>
+	<SchemaVersion>2.0</SchemaVersion>
+	<ProjectGuid>{D6497898-1DC1-07D6-4528-35ECA0EBA1E3}</ProjectGuid>
+	<OutputType>Library</OutputType>
+	<AppDesignerFolder>Properties</AppDesignerFolder>
+	<RootNamespace></RootNamespace>
+	<AssemblyName>Assembly-UnityScript</AssemblyName>
+	<TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+	<FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+	<DebugSymbols>true</DebugSymbols>
+	<DebugType>full</DebugType>
+	<Optimize>false</Optimize>
+	<OutputPath>Temp\bin\Debug\</OutputPath>
+	<DefineConstants>DEBUG;TRACE;UNITY_3_5_7;UNITY_3_5;UNITY_EDITOR;ENABLE_PROFILER;UNITY_ANDROID;ENABLE_GENERICS;ENABLE_TERRAIN;ENABLE_WEBCAM;ENABLE_NETWORK;ENABLE_CLOTH;ENABLE_WWW</DefineConstants>
+	<ErrorReport>prompt</ErrorReport>
+	<WarningLevel>4</WarningLevel>
+	<NoWarn>0169</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+	<DebugType>pdbonly</DebugType>
+	<Optimize>true</Optimize>
+	<OutputPath>Temp\bin\Release\</OutputPath>
+	<DefineConstants>TRACE</DefineConstants>
+	<ErrorReport>prompt</ErrorReport>
+	<WarningLevel>4</WarningLevel>
+	<NoWarn>0169</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+	<Reference Include="System" />
+    <Reference Include="System.XML" />
+	<Reference Include="System.Core" />
+	<Reference Include="UnityEngine">
+	  <HintPath>/Applications/Unity/Unity.app/Contents/Frameworks/Managed/UnityEngine.dll</HintPath>
+	</Reference>
+	<Reference Include="UnityEditor">
+	  <HintPath>/Applications/Unity/Unity.app/Contents/Frameworks/Managed/UnityEditor.dll</HintPath>
+	</Reference>
+  </ItemGroup>
+  <ItemGroup>
+     <Compile Include="Assets\Sample\NewBehaviourScript.js" />
+     <None Include="Assets\Plugins\Android\res\values-de\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-sk\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-ko\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-pt-rBR\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-bg\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-ja\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-he\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-tr\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-uk\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-et\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-fi\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-en-rGB\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-ro\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-af\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-sw\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-ca\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-tl\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-zh-rTW\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-pl\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-pt\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-am\strings.xml" />
+     <None Include="Assets\Nemo\Readme - Agents.txt" />
+     <None Include="Assets\Plugins\Android\res\values-nb\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-zu\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-hu\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-es\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-fr\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-ms\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-vi\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-lv\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-zh-rCN\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-in\strings.xml" />
+     <None Include="Assets\Plugins\Android\AndroidManifest.xml" />
+     <None Include="Assets\Plugins\Android\res\values-ar\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-hi\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-sl\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-lt\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-es-rUS\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-pt-rPT\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-be\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-sr\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-cs\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-iw\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-hr\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-nl\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-th\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-sv\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-da\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-ru\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-fa\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-el\strings.xml" />
+     <None Include="Assets\Plugins\Android\res\values-it\strings.xml" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+	   Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  
+</Project>

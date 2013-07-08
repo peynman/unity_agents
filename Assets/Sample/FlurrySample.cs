@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class FlurrySample : NativeUISample 
+public class FlurrySample : AgentUISample 
 {
 	public override string Title { get { return "Flurry Agent"; } }
 	public override void DrawAgentGUI (Samples s)

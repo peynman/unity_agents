@@ -1,4 +1,4 @@
-#define	ENABLE_PLUGIN
+#undef ENABLE_PLUGIN
 
 using UnityEngine;
 using System.Collections;

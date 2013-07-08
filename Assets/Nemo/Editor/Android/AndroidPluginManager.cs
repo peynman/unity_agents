@@ -28,6 +28,7 @@ public class AndroidPluginManager : EditorWindow
 	UnityGUI_Versions 		guiVersions;
 	UnityGUI_AgentVersion	guiProperties;
 	
+	public static string		ManagerVersionName = "0.2";
 	
 	void initialize()
 	{
@@ -72,6 +73,14 @@ public class AndroidPluginManager : EditorWindow
 	}
 	void OnGUI()
 	{
+		if (plugins.VersionName != ManagerVersionName)
+		{
+			EditorGUILayout.LabelField("Dependencies version missmatch", RedLabel);
+			EditorGUILayout.LabelField("Manager version: " + ManagerVersionName);
+			EditorGUILayout.LabelField("Dependencies version: " + plugins.VersionName);
+			return;
+		}
+		
 		window_scroll = EditorGUILayout.BeginScrollView(window_scroll);
 		guiVersions.OnGUI();
 		if (guiVersions.EditingVersion != null)
@@ -80,7 +89,8 @@ public class AndroidPluginManager : EditorWindow
 			if (agent != null && guiVersions.EditingVersion.hasPlugin(agent.filename))
 			{
 				EditorGUILayout.LabelField("Plugin Properties: " + agent.filename, BoldLabel);
-				guiProperties.OnGUI(guiVersions.EditingVersion.getVersionOfPlugin(agent.filename));
+				guiProperties.OnGUI(guiVersions.EditingVersion.getVersionOfPlugin(agent.filename)
+					, plugins, guiVersions.EditingVersion);
 			}
 		}
 		EditorGUILayout.EndScrollView();
@@ -95,9 +105,15 @@ public class AndroidPluginManager : EditorWindow
 		{
 			if (guiVersions.EditingVersion != null)
 			{
-				SaveVersionToFile(GetVersionFilename(guiVersions.EditingVersion), guiVersions.EditingVersion);
-				ApplyVersion(guiVersions.EditingVersion);
-				this.Close();
+				if (guiVersions.EditingVersion.isVersionReady())
+				{
+					SaveVersionToFile(GetVersionFilename(guiVersions.EditingVersion), guiVersions.EditingVersion);
+					ApplyVersion(guiVersions.EditingVersion);
+					this.Close();
+				} else
+				{
+					EditorUtility.DisplayDialog("Error", "Aditional information is needed for this version, please fill all required data", "OK");
+				}
 			}
 		}
 		if (GUILayout.Button("Close"))
@@ -107,7 +123,6 @@ public class AndroidPluginManager : EditorWindow
 		EditorGUILayout.Space();
 		EditorGUILayout.EndHorizontal();
 		EditorGUILayout.Space();
-		
 	}
 	
 	void OnGUI_Version(AgentSetVersion version)
@@ -126,17 +141,8 @@ public class AndroidPluginManager : EditorWindow
 					version_style = NormalLabel;
 				else
 				{
-					/*
-					Object agent = GameObject.FindObjectOfType(System.Type.GetType("UnityEngine."+plugins.Agents[i].filename.Substring(0, 
-						plugins.Agents[i].filename.Length-3), false, false));
-					if (agent == null)
 					{
-						version_style = NormalLabel;
-						v.status = false;
-						Debug.LogWarning("No GameObject with " + plugins.Agents[i].filename + " component has found!");
-					} else */
-					{
-						if (v.isVersionReady())
+						if (v.isVersionReady(version))
 						{
 							if (v.isManifestReady(manifest) && v.isStringsReady(exist_strings)) version_style = GreenLabel;
 							else version_style = YellowLabel;
@@ -213,10 +219,10 @@ public class AndroidPluginManager : EditorWindow
 			current_strings = new ManifestResource();
 		for (int i = 0; i < strings.Count; i++)
 		{
-			if (current_strings.hasName(strings.names[i]))
-				current_strings.setValue(strings.names[i], strings.values[i]);
+			if (current_strings.hasName(strings.strings[i].name))
+				current_strings.setValue(strings.strings[i].name, strings.strings[i]);
 			else
-				current_strings.addValue(strings.names[i], strings.values[i]);
+				current_strings.addString(strings.strings[i].name, strings.strings[i]);
 		}
 		StringEditor.SaveResourcesToFile(ManifestResource.StringsFilename, current_strings);
 		Debug.Log("Done :)");
@@ -254,10 +260,10 @@ public class AndroidPluginManager : EditorWindow
 		}
 		for (int i = 0; i < plug.ManifestSource.Strings.Count; i++)
 		{
-			if (strings.hasName(plug.Strings.names[i]))
-				strings.setValue(plug.Strings.names[i], plug.Strings.values[i]);
+			if (strings.hasName(plug.Strings.strings[i].name))
+				strings.setValue(plug.Strings.strings[i].name, plug.Strings.strings[i]);
 			else
-				strings.addValue(plug.Strings.names[i], plug.Strings.values[i]);
+				strings.addString(plug.Strings.strings[i].name, plug.Strings.strings[i]);
 		}
 		if (!System.IO.Directory.Exists(Manifest.LibsFolder)) System.IO.Directory.CreateDirectory(Manifest.LibsFolder);
 		CopyLibraryFiles(System.IO.Directory.GetFiles(plug.ManifestSource.LibraryFolder));
@@ -297,9 +303,9 @@ public class AndroidPluginManager : EditorWindow
 		}
 		for (int i = 0; i < plug.Strings.Count; i++)
 		{
-			if (strings.hasName(plug.Strings.names[i]))
+			if (strings.hasName(plug.Strings.strings[i].name))
 			{
-				strings.removeEntry(plug.Strings.names[i]);
+				strings.removeEntry(plug.Strings.strings[i].name);
 			}
 		}
 	}
@@ -445,7 +451,7 @@ public class AndroidPluginManager : EditorWindow
 	public static AndroidPluginManager		ShowPluginManagerWindow()
 	{
 		AndroidPluginManager editor = EditorWindow.GetWindow(typeof(AndroidPluginManager),
-			true, "Android Manifest Editor") as AndroidPluginManager;
+			true, "Android Plugin Manager - version " + ManagerVersionName) as AndroidPluginManager;
 		editor.initialize();
 		editor.Show();
 		return editor;

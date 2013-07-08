@@ -31,10 +31,14 @@ public class StringEditor : EditorWindow
 	void OnGUI()
 	{
 		scroll = EditorGUILayout.BeginScrollView(scroll);
-		for (int i = 0; i < strings.names.Count; i++)
+		for (int i = 0; i < strings.Count; i++)
 		{
-			EditorGUILayout.LabelField(strings.names[i], BoldLabel);
-			strings.values[i] = EditorGUILayout.TextField(strings.values[i]);
+			EditorGUILayout.LabelField(strings.strings[i].name, BoldLabel);
+			EditorGUILayout.BeginHorizontal();
+			strings.strings[i].value = EditorGUILayout.TextField(strings.strings[i].value);
+			strings.strings[i].msgid = EditorGUILayout.TextField(strings.strings[i].msgid);
+			strings.strings[i].translatable = EditorGUILayout.Toggle(strings.strings[i].translatable,GUILayout.Width(20));
+			EditorGUILayout.EndHorizontal();
 			EditorGUILayout.Space();
 		}
 		EditorGUILayout.EndScrollView();
@@ -47,14 +51,14 @@ public class StringEditor : EditorWindow
 		foreach (ManifestMetaData mmd in manifest.application.meta_data)
 		{
 			if (mmd.value.StartsWith("@string/"))
-				if (!strings.hasName(mmd.value.Substring(8))) strings.addValue(mmd.name, "PUT VALUE HERE");
+				if (!strings.hasName(mmd.value.Substring(8))) strings.addString(mmd.name, "PUT VALUE HERE", "", true);
 		}
 		foreach (ManifestActivity ma in manifest.application.activity)
 		{
 			foreach (ManifestMetaData mmd in ma.meta_data)
 			{
 				if (mmd.value.StartsWith("@string/"))
-					if (!strings.hasName(mmd.value.Substring(8))) strings.addValue(mmd.name, "PUT VALUE HERE");
+					if (!strings.hasName(mmd.value.Substring(8))) strings.addString(mmd.name, "PUT VALUE HERE", "", true);
 			}
 		}
 	}
@@ -88,7 +92,6 @@ public class StringEditor : EditorWindow
 	}
 #endregion
 	
-	/*
 #if UNITY_ANDROID
 	[MenuItem("Nemo/Android/String Editor")]
 	public static StringEditor		ShowManifestEditorWindow()
@@ -99,5 +102,5 @@ public class StringEditor : EditorWindow
 		editor.Show();
 		return editor;
 	}
-#endif */
+#endif
 }

@@ -29,7 +29,7 @@ public class AdmobSample : AgentUISample
 				// resume whatever you where doing
 				break;
 			}
-			Debug.Log("Fullscreen banner event: " + e);
+			Debug.Log("Admob banner event: " + e);
 		};
 	}
 	
@@ -39,11 +39,15 @@ public class AdmobSample : AgentUISample
 		{
 			if (GUILayout.Button("Create New Banner", s.ButtonStyle1))
 			{
-				SampleBannerID = AdmobAgent.instance.CreateBanner(AdmobAgent.AdmobBannerSize.SmartBanner, BannerUID,
-				delegate(AdmobAgent.AdmobEvent e, int width, int height, string error)
+				if (SampleBannerID == 0)
 				{
-					Debug.Log("Admob Banner Event: " + e);
-				});
+					SampleBannerID = AdmobAgent.instance.CreateBanner(AdmobAgent.AdmobBannerSize.SmartBanner, BannerUID,
+					delegate(AdmobAgent.AdmobEvent e, int width, int height, string error)
+					{
+						Debug.Log("Admob Banner Event: " + e + " >>> Width: " + width + " >>> height: " + height );
+					});
+				} else
+					AdmobAgent.instance.RefreshBanner(SampleBannerID);
 				
 			}
 		} else

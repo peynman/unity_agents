@@ -80,7 +80,8 @@ public class Manifest : iXMLSerializable
 		public static string installLocation = "android:installLocation";
 		public static string theme = "android:theme";
 		public static string windowSoftInputMode = "android:windowSoftInputMode";
-		
+		public static string msgid = "msgid";
+		public static string translatable = "translatable";		
 	}
 	public static bool		hasAttribute(XmlNode node, string attribute)
 	{
@@ -181,7 +182,7 @@ public class Manifest : iXMLSerializable
 	}
 	public static void				WriteAttribute(XmlWriter writer, string name, string value)
 	{
-		if (value != "" && value != " ") writer.WriteAttributeString(name, value);
+		if (value != "" && value != " " && value != "VALUE GOES HERE") writer.WriteAttributeString(name, value);
 	}
 }
 public class ManifestMetaData : iXMLSerializable
@@ -390,53 +391,89 @@ public class ManifestActivity : iXMLSerializable
 		return false;
 	}
 }
+public class ManifestString : iXMLSerializable
+{
+	public string		name = "", value = "";
+	public string		msgid = "";
+	public bool		translatable = true;
+	
+	public void		Write(XmlWriter writer)
+	{
+		writer.WriteStartElement(Manifest.Element.string_element);
+		writer.WriteAttributeString("name", name);
+		if (!translatable) writer.WriteAttributeString(Manifest.Attribute.translatable, translatable.ToString());
+		if (msgid != "") writer.WriteAttributeString(Manifest.Attribute.msgid, msgid);
+		writer.WriteValue(value);
+		writer.WriteEndElement();
+	}
+	
+	public void		Read(XmlNode node)
+	{
+		if (Manifest.isElement(node, Manifest.Element.string_element))
+		{
+			//if (node.Attributes["name"] == null) return;
+			name = node.Attributes["name"].Value;
+			value = node.InnerText;
+			if (Manifest.hasAttribute(node, Manifest.Attribute.translatable))
+				translatable = bool.Parse(node.Attributes[Manifest.Attribute.translatable].Value);
+			if (Manifest.hasAttribute(node, Manifest.Attribute.msgid))
+				msgid = node.Attributes[Manifest.Attribute.msgid].Value;
+		} else Debug.LogError("Node is not string: " + node.Name + " :: " + node.InnerXml);
+	}
+}
+
 public class ManifestResource : iXMLSerializable
 {
 	public static string		StringsFilename { get { return Application.dataPath + "/Plugins/Android/res/values/strings.xml"; } }
 	public static string		StringsFolder { get { return Application.dataPath + "/Plugins/Android/res/values/"; } }
 	
-	public List<string>		names = new List<string>();
-	public List<string>		values = new List<string>();
+	public List<ManifestString>		strings = new List<ManifestString>();
 	
 	public void		Write(XmlWriter writer)
 	{
 		writer.WriteStartElement(Manifest.Element.resources);
-		for (int i = 0; i < names.Count; i++)
-		{
-			writer.WriteStartElement(Manifest.Element.string_element);
-			writer.WriteAttributeString("name", names[i]);
-			writer.WriteValue(values[i]);
-			writer.WriteEndElement();
-		}
+		for (int i = 0; i < strings.Count; i++) strings[i].Write(writer);
 		writer.WriteEndElement();
 	}
 
 	public void		Read(XmlNode node)
 	{
-		names.Clear();
-		values.Clear();
+		strings.Clear();
 		if (Manifest.isElement(node, Manifest.Element.resources))
 		{
 			foreach (XmlNode child in node.ChildNodes)
 			{
-				if (child.Name == Manifest.Element.string_element)
-				{
-					addValue(child.Attributes["name"].Value, child.InnerText);
-				}
+				if (child.Name == Manifest.Element.string_element) addString("", "", "", true).Read(child);
 			}
-		} else
-			Debug.LogError("Node is not resource");
+		} else Debug.LogError("Node is not resource");
 	}
 	
-	public int		Count { get { return names.Count; } }
-	public void		addValue(string name, string val)
+	public void	Clear() { strings.Clear(); }
+	public int		Count { get { return strings.Count; } }
+	public ManifestString		addString(string name, string val, string msgid, bool translatable)
 	{
-		names.Add(name);
-		values.Add(val);
+		ManifestString ms = new ManifestString();
+		ms.name = name;
+		ms.value = val;
+		ms.msgid = msgid;
+		ms.translatable = translatable;
+		strings.Add(ms);
+		return ms;
+	}
+	public ManifestString		addString(string name, ManifestString copy)
+	{
+		ManifestString ms = new ManifestString();
+		ms.name = name;
+		ms.value = copy.value;
+		ms.msgid = copy.msgid;
+		ms.translatable = copy.translatable;
+		strings.Add(ms);
+		return ms;
 	}
 	public bool		hasName(string name)
 	{
-		return names.Contains(name);
+		for (int i = 0; i < strings.Count; i++) if (strings[i].name == name) return true;
+		return false;
 	}
 	public static bool		isResourceString(string value)
 	{
@@ -444,8 +481,7 @@ public class ManifestResource : iXMLSerializable
 	}
 	public void		addFromMetaData(ManifestMetaData mmd, string value)
 	{
-		if (!hasName(mmd.value.Substring(8)))
-			addValue(mmd.value.Substring(8), value);
+		if (!hasName(mmd.value.Substring(8))) addString(mmd.value.Substring(8), value, "", true);
 	}
 	public void		addAllFromMetaDataList(List<ManifestMetaData> list, string default_value)
 	{
@@ -460,19 +496,36 @@ public class ManifestResource : iXMLSerializable
 	}
 	public string	getValue(string name)
 	{
-		int index = names.IndexOf(name);
-		return values[index];
+		for (int i = 0; i < strings.Count; i++) if (strings[i].name == name) return strings[i].value;
+		return "";
 	}
-	public void		setValue(string name, string value)
+	public void		setValue(string name, string value, string msgid, bool translatable)
 	{
-		int index = names.IndexOf(name);
-		values[index] = value;
+		for (int i = 0; i < strings.Count; i++) if (strings[i].name == name)
+		{
+			strings[i].value = value; 
+			strings[i].msgid = msgid;
+			strings[i].translatable = translatable;
+			break; 
+		}
+	}
+	public void		setValue(string name, ManifestString copy)
+	{
+		for (int i = 0; i < strings.Count; i++) if (strings[i].name == name)
+		{
+			strings[i].value = copy.value;
+			strings[i].msgid = copy.msgid;
+			strings[i].translatable = copy.translatable;
+			break; 
+		}
 	}
 	public void		removeEntry(string name)
 	{
-		int index = names.IndexOf(name);
-		values.RemoveAt(index);
-		names.RemoveAt(index);
+		for (int i = 0; i < strings.Count; i++) if (strings[i].name == name)
+		{
+			strings.RemoveAt(i);
+			break;
+		}
 	}
 }
 
@@ -493,6 +546,7 @@ public class AgentDependency : iXMLSerializable
 		public static string	Library = "uses-library";
 		public static string	Definition = "define";
 		public static string	PreDefSet = "predef-set";
+		public static string	RequiresAgent = "requires-agents";
 	}
 	public static class Attribute
 	{
@@ -502,7 +556,7 @@ public class AgentDependency : iXMLSerializable
 		public static string	status = "status";
 	}
 	
-	public string					VersionName = "1.0";
+	public string					VersionName = "0.2";
 	public List<AgentManifest>		Agents = new List<AgentManifest>();
 	
 	public void		Write(XmlWriter writer)
@@ -520,6 +574,11 @@ public class AgentDependency : iXMLSerializable
 			VersionName = node.Attributes[Attribute.version].Value;
 			foreach (XmlNode child in node) addAgent().Read(child);
 		} else Debug.LogError("Node is not Nemo Agent");
+	}
+	
+	public bool				hasAgent(string filename)
+	{
+		return (getAgentWithFilename(filename) != null);
 	}
 	
 	public AgentManifest	addAgent()
@@ -546,6 +605,7 @@ public class AgentManifest : iXMLSerializable
 	public List<ManifestMetaData>		MetaData = new List<ManifestMetaData>();
 	public List<ManifestActivity>		Activity = new List<ManifestActivity>();
 	public ManifestResource				Strings = new ManifestResource();
+	public List<string>				RequiredAgents = new List<string>();
 	
 	public void Write(XmlWriter writer)
 	{
@@ -558,6 +618,12 @@ public class AgentManifest : iXMLSerializable
 		for (int i = 0; i < Permission.Count; i++) Permission[i].Write(writer);
 		for (int i = 0; i < MetaData.Count; i++) MetaData[i].Write(writer);
 		for (int i = 0; i < Activity.Count; i++) Activity[i].Write(writer);
+		writer.WriteStartElement(AgentDependency.Element.RequiresAgent);
+		for (int i = 0; i < RequiredAgents.Count; i++)
+		{
+			writer.WriteElementString(AgentDependency.Element.Agent, RequiredAgents[i]);
+		}
+		writer.WriteEndElement();
 		Strings.Write(writer);
 		writer.WriteEndElement();
 	}
@@ -566,6 +632,11 @@ public class AgentManifest : iXMLSerializable
 	{
 		if (node.Name == AgentDependency.Element.Agent)
 		{
+			Permission.Clear();
+			Activity.Clear();
+			MetaData.Clear();
+			Strings.Clear();
+			RequiredAgents.Clear();
 			filename = node.Attributes[AgentDependency.Attribute.filename].Value;
 			foreach (XmlNode child in node)
 			{
@@ -576,6 +647,8 @@ public class AgentManifest : iXMLSerializable
 				if (child.Name == Manifest.Element.MetaData) addMetaData().Read(child);
 				else
 				if (child.Name == Manifest.Element.resources) Strings.Read(child);
+				else
+				if (child.Name == AgentDependency.Element.RequiresAgent) CollectDependencyAgents(child);
 			}
 			Strings.addAllFromActivityList(Activity, "NOT SET");
 			Strings.addAllFromMetaDataList(MetaData, "NOT SET");
@@ -586,10 +659,9 @@ public class AgentManifest : iXMLSerializable
 	{
 		for (int i = 0; i < Strings.Count; i++)
 		{
-			if (!doesMetaDataWithStringNameExist(Strings.names[i]))
+			if (!doesMetaDataWithStringNameExist(Strings.strings[i].name))
 			{
-				Strings.names.RemoveAt(i);
-				Strings.values.RemoveAt(i);
+				Strings.strings.RemoveAt(i);
 				i--;
 			}
 		}
@@ -626,6 +698,13 @@ public class AgentManifest : iXMLSerializable
 	public bool		hasResources()
 	{
 		return System.IO.Directory.Exists(ResFolder);
+	}
+	public void		CollectDependencyAgents(XmlNode node)
+	{
+		foreach (XmlNode child in node.ChildNodes)
+		{
+			if (child.Name == AgentDependency.Element.Agent) RequiredAgents.Add(child.InnerText);
+		}
 	}
 }
 public class AgentSetVersion : iXMLSerializable
@@ -693,7 +772,7 @@ public class AgentSetVersion : iXMLSerializable
 	public bool		isVersionReady()
 	{
 		if (name == "" || versionCode == "" || versionName == "") return false;
-		for (int i = 0; i < Plugins.Count; i++) if (!Plugins[i].isVersionReady()) return false;
+		for (int i = 0; i < Plugins.Count; i++) if (!Plugins[i].isVersionReady(this)) return false;
 		return true;
 	}
 	public bool		isManifestReady(Manifest manifest)
@@ -764,8 +843,7 @@ public class AgentVersion : iXMLSerializable
 		filename = am.filename;
 		this.status = status;
 		MetaData.Clear();
-		Strings.names.Clear();
-		Strings.values.Clear();
+		Strings.Clear();
 		importMetaDataFrom(am.MetaData, false);
 		foreach (ManifestActivity act in am.Activity)
 			importMetaDataFrom(act.meta_data, true);
@@ -832,10 +910,10 @@ public class AgentVersion : iXMLSerializable
 	{
 		for (int i = 0; i < Strings.Count; i++)
 		{
-			if (!strings.hasName(Strings.names[i])) return false;
+			if (!strings.hasName(Strings.strings[i].name)) return false;
 			else
 			{
-				if (strings.getValue(Strings.names[i]) != Strings.values[i]) return false;
+				if (strings.getValue(Strings.strings[i].name) != Strings.strings[i].value) return false;
 			}
 		}
 		return true;
@@ -845,12 +923,14 @@ public class AgentVersion : iXMLSerializable
 	{
 		return true;
 	}
-	public bool		isVersionReady()
+	public bool		isVersionReady(AgentSetVersion s)
 	{
 		if (status)
 		{
 			for (int i = 0; i < MetaData.Count; i++) if (MetaData[i].value == "NOT SET") return false;
-			for (int i = 0; i < Strings.Count; i++) if (Strings.values[i] == "NOT SET") return false;
+			for (int i = 0; i < Strings.Count; i++) if (Strings.strings[i].value == "NOT SET") return false;
+			for (int i = 0; i < ManifestSource.RequiredAgents.Count; i++)
+				if (!s.isPluginActive(ManifestSource.RequiredAgents[i])) return false;
 		}
 		return true;
 	}
@@ -1234,6 +1314,8 @@ public class UnityGUI_Activity
 		act.name = EditorGUILayout.TextField("Name", act.name);
 		act.label = EditorGUILayout.TextField("Label", act.label);
 		act.configChanges = EditorGUILayout.TextField("Config Changes", act.configChanges);
+		act.theme = EditorGUILayout.TextField("Theme", act.theme);
+		act.windowSoftInputMode = EditorGUILayout.TextField("Soft Input Mode", act.windowSoftInputMode);
 		act.Startup = EditorGUILayout.Toggle("Startup Activity", act.Startup);
 		guiMetaData.meta_data = act.meta_data;
 		EditorGUILayout.LabelField("Activity Meta-Data (name, value, resource)");
@@ -1278,7 +1360,7 @@ public class UnityGUI_AgentManifest
 	
 	GUIStyle	PositiveButton = new GUIStyle("Button");
 	GUIStyle	NegetiveButton = new GUIStyle("Button");
-	string 		new_metaname = "";
+	string 		new_metaname = "", new_depname = "";
 	UnityGUI_Permission	 guiPermission;
 	UnityGUI_Activity	 guiActivity;
 
@@ -1302,9 +1384,6 @@ public class UnityGUI_AgentManifest
 		EditorGUILayout.BeginVertical();
 		Target.filename = EditorGUILayout.TextField("Plugin Filename", Target.filename);
 		EditorGUILayout.Space();
-		EditorGUILayout.LabelField("Required Libraries", BoldLabel);
-		OnGUI_Libraries();
-		EditorGUILayout.Space();
 		EditorGUILayout.LabelField("Required Meta-Data", BoldLabel);
 		OnGUI_MetaData();
 		EditorGUILayout.Space();
@@ -1315,6 +1394,9 @@ public class UnityGUI_AgentManifest
 		EditorGUILayout.LabelField("Plugin Required Activities", BoldLabel);
 		guiActivity.activity = Target.Activity;
 		guiActivity.OnGUI();
+		EditorGUILayout.Space ();
+		EditorGUILayout.LabelField("Required Plugins");
+		OnGUI_Dependencies();
 		EditorGUILayout.EndVertical();
 	}
 	void OnGUI_MetaData()
@@ -1343,9 +1425,29 @@ public class UnityGUI_AgentManifest
 			EditorGUILayout.EndHorizontal();
 		}
 	}
-	void OnGUI_Libraries()
+	void OnGUI_Dependencies()
 	{
-		
+		EditorGUILayout.BeginHorizontal();
+		new_depname = EditorGUILayout.TextField("Plugin Name", new_depname);
+		if (GUILayout.Button("+", PositiveButton))
+		{
+			if (!new_depname.EndsWith(".cs")) new_depname += ".cs";
+			Target.RequiredAgents.Add(new_depname);
+			new_depname = "";
+		}
+		EditorGUILayout.EndHorizontal();
+		for (int i = 0; i < Target.RequiredAgents.Count; i++)
+		{
+			EditorGUILayout.BeginHorizontal();
+			if (GUILayout.Button("-", NegetiveButton))
+			{
+				Target.RequiredAgents.RemoveAt(i);
+				i--;
+				continue;
+			}
+			Target.RequiredAgents[i] = EditorGUILayout.TextField(Target.RequiredAgents[i]);
+			EditorGUILayout.EndHorizontal();
+		}
 	}
 }
 public class UnityGUI_Versions
@@ -1359,11 +1461,10 @@ public class UnityGUI_Versions
 				RedLabel = new GUIStyle("Label"),
 				YellowLabel = new GUIStyle("Label");
 	
-	
 	Vector2		scroll = Vector2.zero;
 	string		new_version = "", new_def = "";
-//	AgentDependency	Dependencies;
-	Manifest		manifest;
+//	AgentDependency		dependencies;
+	Manifest			manifest;
 	public AgentSetVersion EditingVersion = null;
 	
 	public void SetStyles(GUIStyle pos, GUIStyle neg, GUIStyle label, GUIStyle green, GUIStyle red, GUIStyle yellow)
@@ -1379,10 +1480,10 @@ public class UnityGUI_Versions
 	public UnityGUI_Versions(List<AgentSetVersion> list, AgentDependency deps, Manifest m)
 	{
 		Versions = list;
-		//Dependencies = deps;
+//		dependencies = deps;
 		manifest = m;
 	}
-	
+
 	public GUIStyle		getVersionStyle(AgentSetVersion ver)
 	{
 		if (ver.isVersionReady())
@@ -1461,8 +1562,8 @@ public class UnityGUI_AgentVersion
 	//GUIStyle	NegetiveButton = new GUIStyle("Button"),
 				SubBoldLabel = new GUIStyle("Label"),
 				GreenLabel = new GUIStyle("Label"),
-				RedLabel = new GUIStyle("Label");
-//				YellowLabel = new GUIStyle("Label");
+				RedLabel = new GUIStyle("Label"),
+				YellowLabel = new GUIStyle("Label");
 	Manifest	manifest;
 	
 	public UnityGUI_AgentVersion(Manifest m)
@@ -1477,10 +1578,10 @@ public class UnityGUI_AgentVersion
 		SubBoldLabel = sublabel;
 		GreenLabel = green;
 		RedLabel = red;
-	//	YellowLabel = yellow;
+		YellowLabel = yellow;
 	}
 	
-	public void		OnGUI(AgentVersion version)
+	public void		OnGUI(AgentVersion version, AgentDependency deps, AgentSetVersion vset)
 	{
 		GUIStyle status_style = GreenLabel;
 		if (version.MetaData.Count > 0)
@@ -1497,9 +1598,9 @@ public class UnityGUI_AgentVersion
 			EditorGUILayout.LabelField("Strings", SubBoldLabel);
 			for (int i = 0; i < version.Strings.Count; i++)
 			{
-				version.Strings.values[i] =
-					EditorGUILayout.TextField(version.Strings.names[i],
-						version.Strings.values[i]);
+				version.Strings.strings[i].value =
+					EditorGUILayout.TextField(version.Strings.strings[i].name,
+						version.Strings.strings[i].value);
 			}
 		} else EditorGUILayout.LabelField("No String Resource is Required", SubBoldLabel);
 		if (version.ManifestSource.Permission.Count > 0)
@@ -1530,6 +1631,21 @@ public class UnityGUI_AgentVersion
 				}
 			}
 		} else EditorGUILayout.LabelField("No Activity is Required", SubBoldLabel);
-		
+		if (version.ManifestSource.RequiredAgents.Count > 0)
+		{
+			EditorGUILayout.LabelField("Dependencies", SubBoldLabel);
+			for (int i = 0; i < version.ManifestSource.RequiredAgents.Count; i++)
+			{
+				status_style = GreenLabel;
+				if (!deps.hasAgent(version.ManifestSource.RequiredAgents[i]))
+				{
+					status_style = RedLabel;
+					EditorGUILayout.LabelField("Warning: No plugin with filename: " + version.ManifestSource.RequiredAgents[i] +
+						" found. Maybe your Plugin Manager is out-dated.", YellowLabel);
+				} else if (!vset.isPluginActive(version.ManifestSource.RequiredAgents[i]))
+					status_style = RedLabel;
+				EditorGUILayout.LabelField(version.ManifestSource.RequiredAgents[i], status_style);
+			}
+		} else EditorGUILayout.LabelField("No Additional Plugins Required");
 	}
 }
