@@ -54,12 +54,12 @@ public class ScreenshotAgent : NemoAgent
 		android.Call("RefreshAndroidGallery");
 	}
 #else
-	private void		_SaveScreenshotAsync(string filepath, int handle) {}
-	private void		_SaveScreenshotToPublicGalleryAsync(string filename, string album, int handle) {}
-	private void		_SaveScreenshotToPrivateFolderAsync(string filename, string album, int handle) {}
-	private string		_GetPublicGalleryPath(string album) { return ""; }
-	private string		_GetPrivateFolderPath(string album) { return ""; }
-	private void		_RefreshGallery() {}
+	private void		_SaveScreenshotAsync(string filepath, int handle) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_SaveScreenshotToPublicGalleryAsync(string filename, string album, int handle) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_SaveScreenshotToPrivateFolderAsync(string filename, string album, int handle) { NemoAgent.LogDisabledAgentCall(); }
+	private string		_GetPublicGalleryPath(string album) { NemoAgent.LogDisabledAgentCall(); return ""; }
+	private string		_GetPrivateFolderPath(string album) { NemoAgent.LogDisabledAgentCall(); return ""; }
+	private void		_RefreshGallery() { NemoAgent.LogDisabledAgentCall(); }
 #endif
 
 	void Awake()

@@ -51,11 +51,11 @@ public class PlayStoreBillingAgent : NemoAgent
 		}
 	}
 #else
-	private void		_QueryAvailableProducts(string[] productIds) {}
-	private void		_QueryPurchasedProducts() {}
-	private void		_PurchaseProduct(string productId) {}
- 	private void		_ConsumePurchase(string token) {}
-	private void		__fillArrayList(string[] ids) {}
+	private void		_QueryAvailableProducts(string[] productIds) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_QueryPurchasedProducts() { NemoAgent.LogDisabledAgentCall(); }
+	private void		_PurchaseProduct(string productId) { NemoAgent.LogDisabledAgentCall(); }
+ 	private void		_ConsumePurchase(string token) { NemoAgent.LogDisabledAgentCall(); }
+	private void		__fillArrayList(string[] ids) { NemoAgent.LogDisabledAgentCall(); }
 #endif
 	
 	public enum PlayStoreBillingEvent

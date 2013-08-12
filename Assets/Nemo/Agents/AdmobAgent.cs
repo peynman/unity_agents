@@ -72,18 +72,18 @@ public class AdmobAgent : NemoAgent
 		android.Call("DestroyBanner", banner_id);
 	}
 #else
-	private void		_CreateBanner(int iid, int size, string uid) {}
-	private void		_SetBannerPosition(int banner, int left, int top) {}
-	private void		_SetBannerVisibility(int banner, bool state) {}
-	private void		_RefreshBanner(int banner) {}
-	private void		_SetGender(string gender) {}
-	private void		_SetBirthdate(string year, string month, string day) {}
-	private void		_SetLocation(string location) {}
-	private void		_SetCustomRequestStatus(bool status) {}
-	private void		_RequestFullscreenAd(string uid) {}
-	private void		_ShowFullscreenAd() {}
-	private bool		_isFullscreenAdReady() { return false; }
-	private void		_DestroyBanner(int banner_id) {}
+	private void		_CreateBanner(int iid, int size, string uid) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_SetBannerPosition(int banner, int left, int top) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_SetBannerVisibility(int banner, bool state) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_RefreshBanner(int banner) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_SetGender(string gender) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_SetBirthdate(string year, string month, string day) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_SetLocation(string location) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_SetCustomRequestStatus(bool status) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_RequestFullscreenAd(string uid) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_ShowFullscreenAd() { NemoAgent.LogDisabledAgentCall(); }
+	private bool		_isFullscreenAdReady() {  NemoAgent.LogDisabledAgentCall(); return false; }
+	private void		_DestroyBanner(int banner_id) { NemoAgent.LogDisabledAgentCall(); }
 #endif
 	
 	public enum AdmobEvent

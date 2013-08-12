@@ -96,21 +96,21 @@ public class FlurryAgent : NemoAgent
         }
 	}
 #else
-	private void	_StartSession() {}
-	private void	_EndSession() {}
-	private void	_SetReportLocation(bool status) {}
-	private void	_SetCaptureUncouthExceptions(bool status) {}
-	private void	_SetContinueSessionMilis(long milis) {}
-	private void	_LogEvent(string id) {}
-	private void	_LogEvent(string id, Dictionary<string, string> data) {}
-	private void	_LogEvent(string id, Dictionary<string, string> data, bool timed) {}
-	private void	_LogEvent(string id, bool timed) {}
-	private void	_LogPageView() {}
-	private void	_SetLogEnabled(bool status) {}
-	private void	_SetUseHttps(bool status) {}
-	private void	_SetAge(int age) {}
-	private void	_SetGender(int gender) {}
-	private void	_SetUserID(string id) {}
+	private void	_StartSession() { NemoAgent.LogDisabledAgentCall(); }
+	private void	_EndSession() { NemoAgent.LogDisabledAgentCall(); }
+	private void	_SetReportLocation(bool status) { NemoAgent.LogDisabledAgentCall(); }
+	private void	_SetCaptureUncouthExceptions(bool status) { NemoAgent.LogDisabledAgentCall(); }
+	private void	_SetContinueSessionMilis(long milis) { NemoAgent.LogDisabledAgentCall(); }
+	private void	_LogEvent(string id) { NemoAgent.LogDisabledAgentCall(); }
+	private void	_LogEvent(string id, Dictionary<string, string> data) { NemoAgent.LogDisabledAgentCall(); }
+	private void	_LogEvent(string id, Dictionary<string, string> data, bool timed) { NemoAgent.LogDisabledAgentCall(); }
+	private void	_LogEvent(string id, bool timed) { NemoAgent.LogDisabledAgentCall(); }
+	private void	_LogPageView() { NemoAgent.LogDisabledAgentCall(); }
+	private void	_SetLogEnabled(bool status) { NemoAgent.LogDisabledAgentCall(); }
+	private void	_SetUseHttps(bool status) { NemoAgent.LogDisabledAgentCall(); }
+	private void	_SetAge(int age) { NemoAgent.LogDisabledAgentCall(); }
+	private void	_SetGender(int gender) { NemoAgent.LogDisabledAgentCall(); }
+	private void	_SetUserID(string id) { NemoAgent.LogDisabledAgentCall(); }
 #endif
 	
 	void Awake()
@@ -125,11 +125,13 @@ public class FlurryAgent : NemoAgent
             "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 		logClearID =  AndroidJNIHelper.GetMethodID(logMapObject.GetRawClass(), "clear", "()V");
 #endif
+#if ENABLE_PLUGIN
 		SetReportLocation(ReportLocation);
 		SetLogEnabled(LogEnabled);
 		SetCaptureUncouthExceptions(CaptureUncouthException);
 		SetUseHttps(UseHttps);
 		if (StartSessionOnAwake) StartSession();
+#endif
 	}
 	
 	public bool		StartSessionOnAwake = true,

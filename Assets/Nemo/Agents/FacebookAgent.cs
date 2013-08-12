@@ -177,26 +177,26 @@ public class FacebookAgent : NemoAgent
 		}
 	}
 #else
-	private bool		_hasPublishPermission() { return false; }
-    private bool		_hasPermission(string permission) { return false; }
-    private bool		_isSessionOpened() { return false; }
-	private string		_getAccessToken() { return ""; }
-	private string		_getSessionState() { return ""; }
-	private bool		_hasCurrentUserBasicInfo() { return false; }
-	private bool		_hasCurrentUserFriends() { return false; }
-    private void		_OpenForRead(string[] permissions, int handle) {}
-	private void		_OpenForPublish(string[] permissions, int handle) {}
-	private void		_Close() {}
-	private void		_CloseAndClear() {}
-    private void		_RequestNewPublishPermission(string[] permissions, int handle) {}
-    private void		_RequestNewReadPermission(string[] permissions, int handle) {}
-    private void		_ExecuteMeRequest(int handle) {}
-    private void		_ExecuteMyFriendsRequest(int handle) {}
-	private void		_ExecuteUploadPhotoRequest(string message, Texture2D image, int handle) {}
-	private void		_ExecuteUploadPhotoRequest(string message, string filepath, int handle) {}
-	private void		_ExecuteGraphPathRequest(string path, int handle) {}
-	private void		_ExecuteStatusUpdateRequest(Dictionary<string, string> bundle, int handle) {}
-	private void		_ShowFeedDialog(Dictionary<string, string> bundle, int handle) {}
+	private bool		_hasPublishPermission() {  NemoAgent.LogDisabledAgentCall(); return false; }
+    private bool		_hasPermission(string permission) {  NemoAgent.LogDisabledAgentCall(); return false; }
+    private bool		_isSessionOpened() {  NemoAgent.LogDisabledAgentCall(); return false; }
+	private string		_getAccessToken() {  NemoAgent.LogDisabledAgentCall(); return ""; }
+	private string		_getSessionState() {  NemoAgent.LogDisabledAgentCall(); return ""; }
+	private bool		_hasCurrentUserBasicInfo() {  NemoAgent.LogDisabledAgentCall(); return false; }
+	private bool		_hasCurrentUserFriends() {  NemoAgent.LogDisabledAgentCall(); return false; }
+    private void		_OpenForRead(string[] permissions, int handle) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_OpenForPublish(string[] permissions, int handle) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_Close() { NemoAgent.LogDisabledAgentCall(); }
+	private void		_CloseAndClear() { NemoAgent.LogDisabledAgentCall(); }
+    private void		_RequestNewPublishPermission(string[] permissions, int handle) { NemoAgent.LogDisabledAgentCall(); }
+    private void		_RequestNewReadPermission(string[] permissions, int handle) { NemoAgent.LogDisabledAgentCall(); }
+    private void		_ExecuteMeRequest(int handle) { NemoAgent.LogDisabledAgentCall(); }
+    private void		_ExecuteMyFriendsRequest(int handle) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_ExecuteUploadPhotoRequest(string message, Texture2D image, int handle) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_ExecuteUploadPhotoRequest(string message, string filepath, int handle) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_ExecuteGraphPathRequest(string path, int handle) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_ExecuteStatusUpdateRequest(Dictionary<string, string> bundle, int handle) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_ShowFeedDialog(Dictionary<string, string> bundle, int handle) { NemoAgent.LogDisabledAgentCall(); }
 #endif
 	
 	public enum FacebookDialogEvent 

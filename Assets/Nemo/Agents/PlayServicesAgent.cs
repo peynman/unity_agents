@@ -77,20 +77,20 @@ public class PlayServicesAgent : NemoAgent
 		android.Call("LoadState", iid, key);
 	}
 #else
-	private bool		_isPlayServicesAvailable(bool show_error_dialog) { return false; }
-	private bool		_isConnected() { return false; }
-	private bool		_isConnecting() { return false; }
-	private void		_Connect() {}
-	private void		_Dissconnect() {}
-	private void		_UnlockAchievement(string id) {}
-	private void		_IncrementAchievement(string id, int step) {}
-	private void		_ShowAchievements() {}
-	private void		_ShowLeaderboards() {}
-	private void		_ShowLeaderboard(string id) {}
-	private void		_SubmitScore(string id, long value) {}
-	private void		_UpdateStateImmediate(int iid, int key, byte[] data) {}
-	private void		_UpdateState(int key, byte[] data) {}
-	private void		_LoadState(int iid, int key) {}
+	private bool		_isPlayServicesAvailable(bool show_error_dialog) {  NemoAgent.LogDisabledAgentCall(); return false; }
+	private bool		_isConnected() {  NemoAgent.LogDisabledAgentCall(); return false; }
+	private bool		_isConnecting() {  NemoAgent.LogDisabledAgentCall(); return false; }
+	private void		_Connect() { NemoAgent.LogDisabledAgentCall(); }
+	private void		_Dissconnect() { NemoAgent.LogDisabledAgentCall(); }
+	private void		_UnlockAchievement(string id) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_IncrementAchievement(string id, int step) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_ShowAchievements() { NemoAgent.LogDisabledAgentCall(); }
+	private void		_ShowLeaderboards() { NemoAgent.LogDisabledAgentCall(); }
+	private void		_ShowLeaderboard(string id) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_SubmitScore(string id, long value) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_UpdateStateImmediate(int iid, int key, byte[] data) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_UpdateState(int key, byte[] data) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_LoadState(int iid, int key) { NemoAgent.LogDisabledAgentCall(); }
 #endif
 	
 	void Awake()

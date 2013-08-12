@@ -1,4 +1,4 @@
-#undef ENABLE_PLUGIN
+#define	ENABLE_PLUGIN
 
 using UnityEngine;
 using System.Collections;
@@ -11,15 +11,17 @@ public class NativeUIAgent : NemoAgent
 	{
 		MessageBoxButton = 1,
 		InputBoxButton = 2,
-		PopupMenuButton = 3
+		PopupMenuButton = 3,
+		MultiplyInputs = 4
 	}
 	
 	public static NativeUIAgent	instance { get { return _instance; } }
 	private static NativeUIAgent	_instance;
-	
 #if UNITY_ANDROID && ENABLE_PLUGIN
 	public static string	ObjectClassPath = "com.nemogames.NativeUIAgent";
-	AndroidJavaObject 		android;
+	AndroidJavaObject 		android, arraylist;
+	System.IntPtr			ptrMethodAdd, ptrMethodClear;
+	
 	private void		_ShowMessageBox(string title, string message, string button1, string button2, string button3)
 	{
 		android.Call("ShowMessageBox", title, message, button1, button2, button3);
@@ -59,16 +61,37 @@ public class NativeUIAgent : NemoAgent
 	{
 		android.Call("ShowComposeMail", address, subject, body, attachment);
 	}
+	private void		_ShowMessageBoxWithInput(string title, string[] input_placeholders, string button0, string button1, string button2) 
+	{
+		__fillArrayList(input_placeholders);
+		android.Call("ShowCustomInputDialog", title, arraylist, button0, button1, button2);
+	}
+	
+	private void		__fillArrayList(string[] ids)
+	{
+		AndroidJNI.CallVoidMethod(arraylist.GetRawObject(), ptrMethodClear, AndroidJNIHelper.CreateJNIArgArray(new object[0]));
+		object[] args = new object[1];
+		foreach (string id in ids)
+		{
+			using (AndroidJavaObject jstring = new AndroidJavaObject("java.lang.String", id))
+			{
+				args[0] = jstring;
+				AndroidJNI.CallBooleanMethod(arraylist.GetRawObject(), ptrMethodAdd,
+					AndroidJNIHelper.CreateJNIArgArray(args));
+			}
+		}
+	}
 #else
-	private void		_ShowMessageBox(string title, string message, string button1, string button2, string button3) {}
-	private void		_ShowMessage(string message, float time) {}
-	private void		_ShowBusy(string title, string message, bool indicator) {}
-	private void		_CloseBusy() {}
-	private void		_TakeScreenshot(string path) {}
-	private void		_ShowWebView(string title, string url, int width, int height) {}
-	private void		_ShowMessageBoxWithInput(string title, string message, string button1, string button2, string button3) {}
-	private void		_ShowPopupMenu(string[] buttons) {}
-	private void		_ShowComposeMail(string address, string subject, string body, string attachment) {}
+	private void		_ShowMessageBox(string title, string message, string button1, string button2, string button3) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_ShowMessage(string message, float time) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_ShowBusy(string title, string message, bool indicator) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_CloseBusy() { NemoAgent.LogDisabledAgentCall(); }
+	private void		_TakeScreenshot(string path) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_ShowWebView(string title, string url, int width, int height) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_ShowMessageBoxWithInput(string title, string message, string button1, string button2, string button3) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_ShowPopupMenu(string[] buttons) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_ShowComposeMail(string address, string subject, string body, string attachment) { NemoAgent.LogDisabledAgentCall(); }
+	private void		_ShowMessageBoxWithInput(string title, string[] input_placeholders, string button0, string button1, string button2) { NemoAgent.LogDisabledAgentCall(); }
 #endif
 	
 	void Awake()
@@ -77,16 +100,21 @@ public class NativeUIAgent : NemoAgent
 #if UNITY_ANDROID && ENABLE_PLUGIN
 		android = new AndroidJavaObject(ObjectClassPath);
 		android.Call("init", gameObject.name, "NativeUIReceiveAgentEvent");
+		arraylist = new AndroidJavaObject("java.util.ArrayList");
+		ptrMethodAdd = AndroidJNI.GetMethodID(arraylist.GetRawClass(), "add", "(Ljava/lang/Object;)Z");
+		ptrMethodClear = AndroidJNI.GetMethodID(arraylist.GetRawClass(), "clear", "()V");
 #endif
 	}
 	
 	public delegate void		HandleMessageBoxEvent(int button_index);
 	public delegate void		HandleMessageBoxWithInputEvent(int button_index, string input);
+	public delegate void		HandleMessageBoxWithMultiplyInputsEvent(int button_index, string[] inputs);
 	public delegate void		HandlePopupEvent(int button_index);
 	
 	HandleMessageBoxEvent 			msgbox_handle;
 	HandleMessageBoxWithInputEvent	input_handle;
 	HandlePopupEvent				popup_handle;
+	HandleMessageBoxWithMultiplyInputsEvent	multiply_input;
 	
 	public void		ShowMessageBox(string title, string message, string button_0, string button_1, string button_2, HandleMessageBoxEvent handle)
 	{
@@ -104,6 +132,12 @@ public class NativeUIAgent : NemoAgent
 	{
 		input_handle = handle;
 		_ShowMessageBoxWithInput(title, message, button_0, button_1, button_2);
+	}
+	public void		ShowMessageBoxWithInput(string title, string[] input_placeholders, string button0, string button1, string button2,
+		HandleMessageBoxWithMultiplyInputsEvent handle)
+	{
+		multiply_input = handle;
+		_ShowMessageBoxWithInput(title, input_placeholders, button0, button1, button2);
 	}
 	public void		ShowPopupMenu(string[] buttons, HandlePopupEvent handle)
 	{
@@ -134,6 +168,16 @@ public class NativeUIAgent : NemoAgent
 			break;
 		case NativeUIEvent.PopupMenuButton:
 			if (popup_handle != null) popup_handle(int.Parse(data["button_index"].ToString()));
+			break;
+		case NativeUIEvent.MultiplyInputs:
+			if (multiply_input != null)
+			{
+				string[] values = new string[data.Count-2];
+				int bid = int.Parse(data["button_index"].ToString());
+				for (int i = 0; i < values.Length; i++)
+					values[i] = data["string_"+i].ToString();
+				multiply_input(bid, values);
+			}
 			break;
 		}
 	}

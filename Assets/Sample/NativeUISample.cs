@@ -23,6 +23,26 @@ public class NativeUISample : AgentUISample
 				NativeUIAgent.instance.ShowMessageBox("Input Result", "You entered: " + text + " and selected button with index: " + button, "OK", "", "", null);
 			});
 		}
+		
+		if (GUILayout.Button("Multiply Inputs",s.ButtonStyle1))
+		{
+			NativeUIAgent.instance.ShowMessageBoxWithInput("Multiply Inputs",
+			new string[] 
+			{
+				"Username",
+				"Password",
+				"Email",
+				"First Name",
+				"Last Name"
+			}, "Positive", "Natural", "Negetive", 
+			delegate(int button_index, System.String[] inputs) 
+			{
+				string sample = "";
+				for (int i = 0; i < inputs.Length; i++)
+					sample += inputs[i] + "; ";
+				NativeUIAgent.instance.ShowMessageBox("Input Result", "You entered: " + sample + " and selected button with index: " + button_index, "OK", "", "", null);
+			});
+		}
 		if (GUILayout.Button("Popup Menu", s.ButtonStyle1))
 		{
 			NativeUIAgent.instance.ShowPopupMenu(new string[] { "Button 1", "Button 2", "Button 3", "Button 4"},
